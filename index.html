@@ -187,15 +187,25 @@ details summary{cursor:pointer;font:600 16px Outfit,sans-serif;min-height:44px;d
  .ed{padding:20px 12px 40px}.ed h2{font-size:28px}
  .stage{height:min(62vw,60vh)}
 }
-@media(max-width:900px) and (orientation:landscape) and (max-height:520px){
- .top{height:48px}
- .view{grid-template-columns:66px minmax(0,1fr)}
- .view>.tools{flex-direction:column;border-right:1px solid var(--line);border-bottom:0;overflow-y:auto;height:calc(100dvh - 48px);position:sticky;top:0}
- .tb{min-width:0}.tools hr{display:block}.sws{display:grid}
- .stage{height:calc(100dvh - 48px)}
+@media(orientation:landscape) and (max-height:520px){
+ .top{height:40px;gap:8px;padding:0 8px}.brand span,.top .who,.top .sp{display:none}
+ .tabs{padding:3px}.tab{min-height:32px;padding:0 10px;font-size:14px}
+ .view{height:auto;grid-template-columns:66px minmax(0,1fr)}
+ .view>.tools{flex-direction:column;border-right:1px solid var(--line);border-bottom:0;overflow-y:auto;height:calc(100dvh - 40px);position:sticky;top:0}
+ .tb{min-width:0;min-height:46px}.tools hr{display:block}.sws{display:grid}
+ .stage{height:calc(100dvh - 40px)}
  .side{grid-column:1/-1}
- .vmain{height:calc(100dvh - 48px)}.vwrap{flex:1 1 auto;min-height:0}
  #vVideo,#vVideo.v-side{grid-template-columns:minmax(0,1fr)}#vVideo.v-tools,#vVideo.v-tools.v-side{grid-template-columns:66px minmax(0,1fr)}
+ .vmain{height:calc(100dvh - 40px)}.vwrap{flex:1 1 auto;min-height:0}
+ .vctrl{flex-wrap:nowrap;overflow-x:auto;gap:4px;padding:4px 6px}
+ .vctrl .btn{min-height:36px;min-width:38px;padding:0 8px;flex:none}.vctrl select{min-height:36px;flex:none}
+ .lbl{display:none}#tcur{font-size:12px;min-width:0;flex:none}#scrub{flex:1 1 120px;min-width:110px;height:36px}
+ .tagov{top:6px;bottom:6px;right:6px;gap:4px;max-width:140px}
+ .tagb{min-height:28px;padding:2px 8px;font-size:12px;border-radius:7px}.tagb small{display:none}
+ .trim{padding:5px 8px}.trh{margin-bottom:5px;gap:6px}.trh .btn{min-height:32px;padding:0 10px}.trh span{font-size:12px}
+ .trk{height:38px;flex:1;margin:0 12px}.trl{display:none}
+ .trim{display:flex;align-items:center;gap:6px}.trh{margin:0;flex:none;flex-wrap:nowrap}.trh b,.trh span{display:none}
+ .toast{bottom:auto;top:46px;padding:8px 14px;font-size:14px}
 }
 </style>
 </head>
@@ -273,7 +283,7 @@ details summary{cursor:pointer;font:600 16px Outfit,sans-serif;min-height:44px;d
    <div class="empty" id="vEmpty"><div class="card"><h2>Sala de vídeo</h2><p>Carga el vídeo del partido. Marca acciones con los botones de abajo, pausa, dibuja encima y deja congelados que se paran solos al reproducir.</p><label class="btn pri" for="vfile" style="justify-content:center">Cargar vídeo</label><p class="note" style="color:#94a3b8">El vídeo no sale del iPad. Las marcas se guardan con el nombre del archivo: al volver a cargarlo, reaparecen.</p></div></div>
   </div>
   <div class="trim" id="trim" hidden>
-   <div class="trh"><i></i><b id="trN"></b><span id="trT"></span><button class="btn" id="trPlay">▶ Ver corte</button><button class="btn" id="trCap"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Captura</button><button class="btn" id="trExp">⬇ MP4</button><button class="btn" id="trDone">Listo</button></div>
+   <div class="trh"><i></i><b id="trN"></b><span id="trT"></span><button class="btn" id="trPlay">▶ Ver corte</button><button class="btn" id="trCap"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span class="lbl">Captura</span></button><button class="btn" id="trExp">⬇ MP4</button><button class="btn" id="trDone">Listo</button></div>
    <div class="trk" id="trk"><div class="trw" id="trWin"></div><div class="hdl" id="hA" aria-label="Inicio del corte"></div><div class="hdl" id="hB" aria-label="Fin del corte"></div><div class="ph" id="trPh"></div></div>
    <div class="trl"><span id="trLo"></span><span>Arrastra los extremos para alargar o acortar · el centro para mover el corte</span><span id="trHi"></span></div>
   </div>
@@ -284,7 +294,7 @@ details summary{cursor:pointer;font:600 16px Outfit,sans-serif;min-height:44px;d
    <button class="btn pri" id="bPP" aria-label="Reproducir o pausar">▶</button>
    <button class="btn" id="bF2" aria-label="Fotograma siguiente">|▶︎</button>
    <button class="btn" id="bA5" aria-label="Adelante 5 segundos">+5s</button>
-   <button class="btn" id="bCap" aria-label="Captura para dibujar"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Captura</button>
+   <button class="btn" id="bCap" aria-label="Captura para dibujar"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span class="lbl">Captura</span></button>
    <input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Posición del vídeo">
    <span id="tcur">0:00.0 / 0:00.0</span>
    <select id="speed" aria-label="Velocidad"><option value=".25">0,25×</option><option value=".5">0,5×</option><option value="1" selected>1×</option><option value="1.5">1,5×</option><option value="2">2×</option><option value="3">3×</option><option value="4">4×</option><option value="5">5×</option></select>
