@@ -67,6 +67,7 @@ label.lab{display:flex;align-items:center;gap:8px;font-size:15px}
 .vwrap{position:relative;flex:1;min-height:240px;overflow:hidden}
 .vwrap video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 #vc{position:absolute;touch-action:none}
+#vVideo.v-fill .vwrap video{object-fit:cover}
 .empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;color:#cbd5e1}
 .empty[hidden]{display:none}
 .empty .card{max-width:420px}
@@ -218,6 +219,18 @@ body.vmode .cliplabel{top:48px}
  .trim{display:flex;align-items:center;gap:6px}.trh{margin:0;flex:none;flex-wrap:nowrap}.trh b,.trh span{display:none}
  .toast{bottom:auto;top:46px;padding:8px 14px;font-size:14px}
 }
+/* móvil horizontal: el vídeo ocupa todo el alto; controles flotando encima */
+@media(orientation:landscape) and (max-height:520px){
+ body.vmode .vmain{position:relative}
+ body.vmode .vwrap{flex:1 1 auto;height:100%}
+ body.vmode .vctrl{position:absolute;left:0;right:0;bottom:0;z-index:4;background:rgba(10,15,21,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:opacity .3s}
+ body.vmode .vctrl .btn,body.vmode .vctrl select{background:rgba(28,37,49,.7)}
+ body.vmode.playing .vctrl{opacity:.6}
+ body.vmode.playing .tabs{opacity:0;pointer-events:none}
+ body.vmode .vctrl:hover,body.vmode .vctrl:focus-within{opacity:1}
+ body.vmode .trim{position:absolute;left:0;right:0;bottom:44px;z-index:4;background:rgba(15,21,29,.8);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-top:0}
+ body.vmode .tagov{bottom:50px}
+}
 </style>
 </head>
 <body>
@@ -306,6 +319,7 @@ body.vmode .cliplabel{top:48px}
    <button class="btn" id="bF2" aria-label="Fotograma siguiente">|▶︎</button>
    <button class="btn" id="bA5" aria-label="Adelante 5 segundos">+5s</button>
    <button class="btn" id="bCap" aria-label="Captura para dibujar"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span class="lbl">Captura</span></button>
+   <button class="btn" id="tgFill" aria-label="Llenar la pantalla con el vídeo"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span class="lbl">Llenar</span></button>
    <input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Posición del vídeo">
    <span id="tcur">0:00.0 / 0:00.0</span>
    <select id="speed" aria-label="Velocidad"><option value=".25">0,25×</option><option value=".5">0,5×</option><option value="1" selected>1×</option><option value="1.5">1,5×</option><option value="2">2×</option><option value="3">3×</option><option value="4">4×</option><option value="5">5×</option></select>
@@ -510,7 +524,7 @@ const vid=$('#vid'),vc=$('#vc'),vx=vc.getContext('2d');
 let A=null,AK='',vTool='free',vS=[],vDraft=null,showing=null,holding=false,lastT=0,playing=null,vfit={s:1,d:1},filt='',scrubbing=false;
 const fmt=s=>{const t=Math.round(Math.max(0,s||0)*10),m=Math.floor(t/600),x=Math.floor(t/10)%60;return m+':'+String(x).padStart(2,'0')+'.'+t%10};
 const saveA=()=>{if(AK)store.set(AK,A)};
-function layoutV(){const w=$('#vwrap'),cw=w.clientWidth,ch=w.clientHeight;if(!cw)return;const vw=vid.videoWidth||16,vh=vid.videoHeight||9,s=Math.min(cw/vw,ch/vh),W=vw*s,H=vh*s,d=devicePixelRatio||1;
+function layoutV(){const w=$('#vwrap'),cw=w.clientWidth,ch=w.clientHeight;if(!cw)return;const vw=vid.videoWidth||16,vh=vid.videoHeight||9,s=($('#vVideo').classList.contains('v-fill')?Math.max:Math.min)(cw/vw,ch/vh),W=vw*s,H=vh*s,d=devicePixelRatio||1;
  Object.assign(vc.style,{left:(cw-W)/2+'px',top:(ch-H)/2+'px',width:W+'px',height:H+'px'});vc.width=W*d;vc.height=H*d;vfit={s:W/1000,d};drawV()}
 function drawV(){vx.setTransform(1,0,0,1,0,0);vx.clearRect(0,0,vc.width,vc.height);const k=vfit.s*vfit.d;vx.setTransform(k,0,0,k,0,0);for(const s of (showing?showing.s:vS))drawStroke(vx,s,1,5);if(vDraft)drawStroke(vx,vDraft,1,5)}
 const toV=e=>{const r=vc.getBoundingClientRect();return[(e.clientX-r.left)/vfit.s,(e.clientY-r.top)/vfit.s]};
@@ -741,7 +755,8 @@ const mqS=matchMedia('(max-width:600px)');function placeTags(){const t=$('#tagba
 if(mqS.addEventListener)mqS.addEventListener('change',placeTags);placeTags();
 try{if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
 const VUI=store.get('bq.vui',{tools:false,side:false});
-function applyVUI(){$('#vVideo').classList.toggle('v-tools',!!VUI.tools);$('#vVideo').classList.toggle('v-side',!!VUI.side);$('#tgTools').classList.toggle('on',!!VUI.tools);$('#tgSide').classList.toggle('on',!!VUI.side);store.set('bq.vui',VUI)}
+function applyVUI(){$('#vVideo').classList.toggle('v-tools',!!VUI.tools);$('#vVideo').classList.toggle('v-side',!!VUI.side);$('#tgTools').classList.toggle('on',!!VUI.tools);$('#tgSide').classList.toggle('on',!!VUI.side);$('#vVideo').classList.toggle('v-fill',!!VUI.fill);$('#tgFill').classList.toggle('on',!!VUI.fill);store.set('bq.vui',VUI);requestAnimationFrame(layoutV)}
+$('#tgFill').onclick=()=>{VUI.fill=!VUI.fill;applyVUI()};
 $('#tgTools').onclick=()=>{VUI.tools=!VUI.tools;applyVUI()};$('#tgSide').onclick=()=>{VUI.side=!VUI.side;applyVUI()};applyVUI();
 const roC=new ResizeObserver(layoutCE);roC.observe($('#cstage'));
 vid.addEventListener('play',()=>{if(actx&&actx.state!=='running')actx.resume().catch(()=>{})});
