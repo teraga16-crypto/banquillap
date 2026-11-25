@@ -161,6 +161,17 @@ details summary{cursor:pointer;font:600 16px Outfit,sans-serif;min-height:44px;d
 .modal img{width:100%;border-radius:8px;display:block;-webkit-touch-callout:default;user-select:auto}
 .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--navy);color:#fff;padding:12px 18px;border-radius:12px;font-size:15px;opacity:0;transition:.25s;pointer-events:none;z-index:10;max-width:90vw}
 .toast.on{opacity:1;transform:translate(-50%,0)}
+ /* vídeo a pantalla completa: cabecera translúcida encima */
+body.vmode .top{position:fixed;top:0;left:0;right:auto;z-index:5;height:auto;padding:6px;background:transparent;gap:6px}
+body.vmode .top .sp,body.vmode .top .who,body.vmode .brand{display:none}
+body.vmode .tabs{background:rgba(10,16,24,.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);padding:3px;transition:opacity .3s}
+body.vmode .tab{min-height:30px;padding:0 10px;font-size:13px;color:#e5edf6}
+body.vmode .tab.on{background:rgba(255,255,255,.92);color:var(--navy)}
+body.vmode.playing .tabs{opacity:.3}body.vmode .tabs:hover,body.vmode .tabs:focus-within{opacity:1}
+body.vmode #vVideo>.tools{padding-top:52px}
+body.vmode .cliplabel{top:48px}
+@media(min-width:901px){body.vmode #vVideo{height:100dvh}}
+@media(orientation:landscape) and (max-height:520px){body.vmode #vVideo{height:100dvh}body.vmode .vmain,body.vmode #vVideo>.tools{height:100dvh}}
 @media(prefers-reduced-motion:reduce){.toast,.stage{transition:none}}
 @media(max-width:900px){
  .view{grid-template-columns:minmax(0,1fr);height:auto}
@@ -531,7 +542,7 @@ function renderTagbar(){const vis=S.tags.map((t,i)=>[t,i]).filter(x=>x[0].on!==f
  $('#tagbar').innerHTML=vis.map(([t,i])=>`<button class="tagb" style="--c:${esc(t.c)}" data-t="${i}">${esc(t.n||'Sin nombre')}<small>−${t.pre} s · +${t.post} s</small></button>`).join('')}
 function renderTagEd(){$('#tagList').innerHTML=S.tags.map((t,i)=>`<li class="er${t.on===false?' off':''}"><input type="color" value="${esc(t.c)}" data-k="c" data-i="${i}" aria-label="Color"><input type="text" class="nm" value="${esc(t.n)}" data-k="n" data-i="${i}" aria-label="Nombre del botón"><label class="num"><input type="number" min="0" max="120" value="${t.pre}" data-k="pre" data-i="${i}" aria-label="Segundos antes">s</label><label class="num"><input type="number" min="0" max="120" value="${t.post}" data-k="post" data-i="${i}" aria-label="Segundos después">s</label><label class="vis"><input type="checkbox" data-k="on" data-i="${i}"${t.on===false?'':' checked'}>Visible</label><div class="acts"><button class="x" data-up="${i}" aria-label="Subir"${i?'':' disabled'}>↑</button><button class="x" data-dn="${i}" aria-label="Bajar"${i<S.tags.length-1?'':' disabled'}>↓</button><button class="x" data-tdel="${i}" aria-label="Quitar botón">×</button></div></li>`).join('')||'<li class="note">No hay botones. Añade uno.</li>'}
 function renderTags(){renderTagbar();renderTagEd()}
-function showView(v){$$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v));$('#vBoard').hidden=v!=='board';$('#vVideo').hidden=v!=='video';$('#vCuts').hidden=v!=='cuts';$('#vTags').hidden=v!=='tags';
+function showView(v){document.body.classList.toggle('vmode',v==='video');$$('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v));$('#vBoard').hidden=v!=='board';$('#vVideo').hidden=v!=='video';$('#vCuts').hidden=v!=='cuts';$('#vTags').hidden=v!=='tags';
  if(v==='board')sizeBoard();else{if(v!=='video')vid.pause();if(v==='video'){renderTagbar();layoutV()}if(v==='cuts')renderCuts()}window.scrollTo(0,0)}
 let editClip=null,trR={lo:0,hi:1},trDrag=null;
 function trimRange(){const c=editClip,D=vid.duration||c.b,pad=Math.max(8,(c.b-c.a)*.6);trR={lo:Math.max(0,c.a-pad),hi:Math.min(D,c.b+pad)};if(trR.hi-trR.lo<1)trR.hi=trR.lo+1}
@@ -605,7 +616,8 @@ $('#vfile').onchange=e=>{const f=e.target.files[0];if(f)loadFile(f);e.target.val
 vid.addEventListener('loadedmetadata',()=>{layoutV();lastT=0});
 vid.addEventListener('seeked',()=>{lastT=vid.currentTime});
 vid.addEventListener('play',()=>{$('#bPP').textContent='❚❚';if(holding)holding=false;if(showing){showing=null;drawV()}});
-vid.addEventListener('pause',()=>{$('#bPP').textContent='▶'});
+vid.addEventListener('pause',()=>{$('#bPP').textContent='▶';document.body.classList.remove('playing')});
+vid.addEventListener('playing',()=>document.body.classList.add('playing'));
 const step=s=>{if(!A)return;vid.pause();vid.currentTime=Math.max(0,Math.min(vid.duration||0,vid.currentTime+s))};
 $('#bPP').onclick=()=>{if(!A){$('#vfile').click();return}if(vid.paused){playing=null;label();vid.play().catch(()=>{})}else vid.pause()};
 $('#bF1').onclick=()=>step(-1/25);$('#bF2').onclick=()=>step(1/25);$('#bB5').onclick=()=>step(-5);$('#bA5').onclick=()=>step(5);
